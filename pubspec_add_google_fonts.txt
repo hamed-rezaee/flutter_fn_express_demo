@@ -1,0 +1,5 @@
+# Add the google_fonts package for vintage font support
+# Run 'flutter pub get' after saving this file
+
+dependencies:
+  google_fonts: ^6.2.1
