@@ -22,7 +22,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web (WASM)
-        run: flutter build web --release --wasm --base-href "/"
+        run: flutter build web --release --wasm --base-href "/flutter_fn_express_demo/"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
