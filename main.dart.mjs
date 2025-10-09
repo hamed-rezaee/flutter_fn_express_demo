@@ -653,6 +653,7 @@ class CompiledApp {
       _1521: Function.prototype.call.bind(BigInt.prototype.toString),
       _1522: Function.prototype.call.bind(Number.prototype.toString),
       _1523: (d, digits) => d.toFixed(digits),
+      _1525: (d, f) => d.toExponential(f),
       _5966: x0 => x0.signal,
       _7806: x0 => x0.value,
       _7808: x0 => x0.done,
