@@ -11,7 +11,7 @@ class FnExpressDemoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Fn Express Demo',
+    title: 'Fn Express Demo ver 2.0.0',
     theme: ThemeData.from(
       useMaterial3: false,
       colorScheme: ColorScheme.dark(primary: Colors.orange),
@@ -69,11 +69,14 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       elevation: 0,
-      title: const Text('Fn Express REPL'),
+      backgroundColor: Colors.black,
       actions: [
         IconButton(
           tooltip: 'Clear Screen',
-          icon: const Icon(Icons.cancel_presentation_rounded),
+          icon: const Icon(
+            Icons.cancel_presentation_rounded,
+            color: Color(0xFFFFA500),
+          ),
           onPressed: () {
             setState(_outputLines.clear);
             _inputFocusNode.requestFocus();
@@ -81,7 +84,10 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
         ),
         IconButton(
           tooltip: 'Help',
-          icon: const Icon(Icons.help_outline_rounded),
+          icon: const Icon(
+            Icons.help_outline_rounded,
+            color: Color(0xFFFFA500),
+          ),
           onPressed: () {
             _repl('help');
             _inputFocusNode.requestFocus();
@@ -93,6 +99,7 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
       children: [
         Expanded(
           child: Container(
+            padding: const EdgeInsets.all(16),
             color: Colors.black,
             child: ListView.builder(
               controller: _scrollController,
@@ -132,7 +139,7 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
                     shadows: [
                       Shadow(
                         blurRadius: 2,
-                        color: Color(0xFFffcc80),
+                        color: Color(0xFFFFCC80),
                         offset: Offset(0, 0),
                       ),
                     ],
