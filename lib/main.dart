@@ -11,7 +11,7 @@ class FnExpressDemoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Fn Express Demo ver 2.0.0',
+    title: 'Fn Express Demo ver 2.1.0',
     theme: ThemeData.from(
       useMaterial3: false,
       colorScheme: ColorScheme.dark(primary: Colors.orange),

@@ -87,10 +87,10 @@ packages:
     dependency: "direct main"
     description:
       name: fn_express
-      sha256: "503e996f95f8b11dcc6bf65bbf62921bf89ca69d4f7df11762063bd742e31fee"
+      sha256: f2856867e01f9881b9a238673dbd2515c888e74e391460b51c0cedbca87bfe4f
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.1.0"
   google_fonts:
     dependency: "direct main"
     description:
