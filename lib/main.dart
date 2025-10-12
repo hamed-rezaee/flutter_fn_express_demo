@@ -6,6 +6,13 @@ import 'package:google_fonts/google_fonts.dart';
 
 void main() => runApp(const FnExpressDemoApp());
 
+class TerminalLine {
+  final String content;
+  final bool isOutput;
+
+  TerminalLine(this.content, {this.isOutput = false});
+}
+
 class FnExpressDemoApp extends StatelessWidget {
   const FnExpressDemoApp({super.key});
 
@@ -34,7 +41,7 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _inputFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
-  final List<String> _outputLines = [];
+  final List<TerminalLine> _terminalLines = [];
 
   @override
   void initState() {
@@ -43,159 +50,129 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
     _repl = Repl((value, {bool newline = true}) {
       setState(() {
         if (newline) {
-          _outputLines.add(value);
+          _terminalLines.add(TerminalLine(value, isOutput: true));
         } else {
-          if (_outputLines.isEmpty) {
-            _outputLines.add(value);
+          if (_terminalLines.isNotEmpty && _terminalLines.last.isOutput) {
+            _terminalLines[_terminalLines.length - 1] = TerminalLine(
+              _terminalLines.last.content + value,
+              isOutput: true,
+            );
           } else {
-            _outputLines[_outputLines.length - 1] += value;
+            _terminalLines.add(TerminalLine(value, isOutput: true));
           }
         }
       });
 
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+      _scrollToBottom();
+    });
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      elevation: 0,
-      backgroundColor: Colors.black,
-      actions: [
-        IconButton(
-          tooltip: 'Clear Screen',
-          icon: const Icon(
-            Icons.cancel_presentation_rounded,
-            color: Color(0xFFFFA500),
-          ),
-          onPressed: () {
-            setState(_outputLines.clear);
-            _inputFocusNode.requestFocus();
-          },
-        ),
-        IconButton(
-          tooltip: 'Help',
-          icon: const Icon(
-            Icons.help_outline_rounded,
-            color: Color(0xFFFFA500),
-          ),
-          onPressed: () {
-            _repl('help');
-            _inputFocusNode.requestFocus();
-          },
-        ),
-      ],
-    ),
     body: Column(
       children: [
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.black,
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: _outputLines.length,
-              itemBuilder: (context, index) {
-                final line = _outputLines[index];
-                return Text(
-                  line,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFFFFA500),
-                    shadows: [
-                      Shadow(
-                        blurRadius: 2,
-                        color: Color(0xFFffcc80),
-                        offset: Offset(0, 0),
+          child: GestureDetector(
+            onTap: () => _inputFocusNode.requestFocus(),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              color: Colors.black,
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: _terminalLines.length + 1,
+                itemBuilder: (context, index) {
+                  if (index < _terminalLines.length) {
+                    final terminalLine = _terminalLines[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 1.0,
+                        horizontal: 8.0,
                       ),
-                    ],
-                  ),
-                );
-              },
+                      child: SelectableText(
+                        terminalLine.isOutput
+                            ? terminalLine.content
+                            : '>> ${terminalLine.content}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: terminalLine.isOutput
+                              ? const Color(0xFFFFA500)
+                              : const Color(0xFF00FF00),
+                          shadows: const [
+                            Shadow(
+                              blurRadius: 2,
+                              color: Color(0xFFffcc80),
+                              offset: Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '>> ',
+                            style: TextStyle(
+                              color: Color(0xFF00FF00),
+                              fontSize: 12,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 2,
+                                  color: Color(0xFF80FF80),
+                                  offset: Offset(0, 0),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _inputController,
+                              focusNode: _inputFocusNode,
+                              autofocus: true,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                color: Color(0xFF00FF00),
+                                fontSize: 12,
+                                shadows: [
+                                  Shadow(
+                                    blurRadius: 2,
+                                    color: Color(0xFF80FF80),
+                                    offset: Offset(0, 0),
+                                  ),
+                                ],
+                              ),
+                              cursorColor: const Color(0xFF00FF00),
+                              decoration: const InputDecoration(
+                                border: InputBorder.none,
+                                hintStyle: TextStyle(color: Color(0xFF808080)),
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              onSubmitted: (_) => _submitInput(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
             ),
-          ),
-        ),
-        const Divider(height: 1),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _inputController,
-                  focusNode: _inputFocusNode,
-                  style: const TextStyle(
-                    color: Color(0xFFFFA500),
-                    fontSize: 14,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 2,
-                        color: Color(0xFFFFCC80),
-                        offset: Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  cursorColor: Color(0xFFFFA500),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.black,
-                    hintText: 'Enter expression or command...',
-                    hintStyle: const TextStyle(color: Color(0xFFffcc80)),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(0),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFFFA500),
-                        width: 1,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(0),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFFFA500),
-                        width: 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(0),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFFFA500),
-                        width: 1,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.all(8),
-                  ),
-                  onSubmitted: (_) => _submitInput(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              TextButton(
-                onPressed: _submitInput,
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFA500),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
-                  ),
-                ),
-                child: const Text(
-                  'Send',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
           ),
         ),
       ],
@@ -203,10 +180,20 @@ class _FnExpressReplPageState extends State<FnExpressReplPage> {
   );
 
   void _submitInput() {
-    _outputLines.add('>> ${_inputController.text}');
-    _repl(_inputController.text);
+    final input = _inputController.text.trim();
+    if (input.isEmpty) return;
+
+    setState(() {
+      _terminalLines.add(TerminalLine(input, isOutput: false));
+    });
+
+    _repl(input);
     _inputController.clear();
-    _inputFocusNode.requestFocus();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _inputFocusNode.requestFocus();
+      _scrollToBottom();
+    });
   }
 
   @override
